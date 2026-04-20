@@ -1,0 +1,359 @@
+.jobmatch-page {
+  padding: 48px 0 80px;
+  flex: 1;
+}
+
+.jobmatch-upload {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.drop-zone-lg {
+  border: 2px dashed var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 28px 32px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.drop-zone-lg:hover {
+  border-color: var(--accent-primary);
+  background: rgba(232, 200, 114, 0.03);
+}
+
+.drop-zone-lg.has-file {
+  border-color: var(--accent-green);
+  border-style: solid;
+  background: rgba(114, 200, 158, 0.04);
+}
+
+.upload-hint {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.upload-icon {
+  font-size: 32px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.upload-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.upload-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.upload-file-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.upload-file-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.upload-file-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.upload-file-size {
+  font-size: 13px;
+  color: var(--accent-green);
+}
+
+.upload-check {
+  margin-left: auto;
+  color: var(--accent-green);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.jm-error {
+  background: rgba(232, 114, 114, 0.1);
+  border: 1px solid rgba(232, 114, 114, 0.3);
+  color: var(--accent-red);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.btn-search-jobs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 32px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  cursor: pointer;
+  transition: all var(--transition);
+  align-self: flex-start;
+  min-height: 48px;
+}
+
+.btn-search-jobs:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(232, 200, 114, 0.3);
+}
+
+.btn-search-jobs:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.jm-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* ── Results ── */
+.jm-results {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.parsed-resume-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.results-heading {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.profile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.profile-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.profile-tag--highlight {
+  background: rgba(232, 200, 114, 0.1);
+  border-color: rgba(232, 200, 114, 0.2);
+  color: var(--accent-primary);
+}
+
+.search-query {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.search-query strong {
+  color: var(--text-secondary);
+}
+
+.jobs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.jobs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.job-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transition: all var(--transition);
+}
+
+.job-card:hover {
+  border-color: var(--border-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.job-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.job-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.job-company {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.job-location {
+  color: var(--text-muted);
+}
+
+.job-salary {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent-green);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.job-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.job-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.job-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.job-date {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.btn-view-job {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--transition);
+}
+
+.btn-view-job:hover {
+  background: var(--accent-hover);
+}
+
+.no-jobs {
+  text-align: center;
+  padding: 48px;
+  color: var(--text-secondary);
+  font-size: 15px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.jm-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-jm-clear {
+  padding: 13px 20px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-jm-clear:hover { color: var(--accent-red); border-color: rgba(232,114,114,0.4); }
+
+.drop-zone-lg.dragging {
+  border-color: var(--accent-primary);
+  background: rgba(232, 200, 114, 0.04);
+}
+
+.loading-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: -8px;
+}
+
+/* ── Responsive JobMatch ── */
+@media (max-width: 600px) {
+  .jm-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .btn-jm-clear {
+    width: 100%;
+  }
+
+  .upload-hint {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .job-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

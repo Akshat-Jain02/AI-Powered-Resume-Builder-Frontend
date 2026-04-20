@@ -1,0 +1,174 @@
+/* ═══════════════════════════════════════════════
+   ResumeAI — Design System
+   Aesthetic: Editorial / Refined Dark
+═══════════════════════════════════════════════ */
+
+:root {
+  /* Dark Theme (Default) */
+  --bg-nav: rgba(10, 10, 15, 0.85);
+  --white-rgb: 255, 255, 255;
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #111118;
+  --bg-card: #16161f;
+  --bg-card-hover: #1d1d28;
+
+  --text-primary: #f0eee8;
+  --text-secondary: #9896a4;
+  --text-muted: #5c5a6b;
+
+  --accent-primary: #e8c872;
+  --accent-hover: var(--accent-hover);
+  --accent-secondary: #c97b4b;
+  --accent-green: #72c89e;
+  --accent-red: #e87272;
+  --accent-blue: #7298e8;
+
+  --border: #2a2a38;
+  --border-light: #38384c;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow-md: 0 8px 32px rgba(0,0,0,0.5);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,0.6);
+
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+
+  --transition: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme='light'] {
+  /* Ultra-Professional & High-Contrast Light Theme */
+  --bg-nav: rgba(241, 245, 249, 0.85); /* Slate 100 navbar */
+  --white-rgb: 0, 0, 0;       /* Auto-inverts overlays to dark mode */
+  
+  --bg-primary: #E2E8F0;      /* Slate-200 softer background to cure eye strain */
+  --bg-secondary: #F1F5F9;    /* Slate-100 secondary background */
+  --bg-card: #FFFFFF;         /* Crisp card background stays white for contrast */
+  --bg-card-hover: #F8FAFC;   /* Slate-50 on hover */
+
+  --text-primary: #0F172A;    /* Slate-900: High impact black, extremely readable */
+  --text-secondary: #334155;  /* Slate-700: Strong secondary contrast */
+  --text-muted: #64748B;      /* Slate-500: Readable but muted */
+
+  --accent-primary: #2563EB;  /* Vibrant Royal Blue for incredible trustworthiness */
+  --accent-hover: #1D4ED8;    /* Darker blue hover */
+  --accent-secondary: #4F46E5;/* Indigo for beautiful gradients */
+  --accent-green: #059669;    /* Clean emerald */
+  --accent-red: #DC2626;      /* Clean crisp crimson */
+  --accent-blue: #1E40AF;     /* Deeper royal blue */
+
+  --border: #CBD5E1;          /* Visible, sharp boundary line */
+  --border-light: #E2E8F0;    /* Softer inner boundaries */
+
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 15px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 35px rgba(15, 23, 42, 0.12);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-size: 15px;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+input, textarea, select {
+  font-family: var(--font-body);
+  font-size: 15px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* ═══ Scrollbar ═══ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+
+/* ═══ Utility Classes ═══ */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+}
+
+/* ═══ Fade In Animation ═══ */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.animate-fade-up {
+  animation: fadeInUp 0.5s ease forwards;
+}
