@@ -17,4 +17,12 @@ export const templateService = {
     apiClient.post(`/api/templates/${id}/usage`).then(res => res.data),
     
   getImageUrl: (id) => `${apiClient.defaults.baseURL}/api/templates/${id}/image`,
+    
+  uploadImage: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiClient.post('/api/templates/upload-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(res => res.data);
+  },
 };

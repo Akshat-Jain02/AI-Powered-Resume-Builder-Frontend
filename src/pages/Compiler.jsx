@@ -4,8 +4,8 @@ import Editor from '@monaco-editor/react';
 import debounce from 'lodash/debounce';
 import { 
   FileText, Play, Download, AlertCircle, Loader2, Sparkles, 
-  Layout, ChevronRight, CheckCircle2, History, Settings, ExternalLink,
-  Save, CloudUpload, ArrowLeft
+  CheckCircle2, Save, ArrowLeft, X, Upload, Trash2, Image,
+  FolderOpen, ChevronDown, ChevronRight
 } from 'lucide-react';
 import { templateService } from '../api/template.service';
 import { compilerService } from '../api/compiler.service';
@@ -26,15 +26,23 @@ export default function Compiler() {
   const [error, setError] = useState(null);
   const [template, setTemplate] = useState(null);
   const [savedId, setSavedId] = useState(initialSavedId);
+  const [toast, setToast] = useState(null);
+  const [projectFiles, setProjectFiles] = useState([]);  // { name, base64, size, type }
+  const [showFilePanel, setShowFilePanel] = useState(false);
   const editorRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const isLoadingContent = useRef(false); // guards against onChange during initial load
 
   useEffect(() => {
     const loadContent = async () => {
+      isLoadingContent.current = true; // suppress onChange during load
       setLoading(true);
       try {
         let currentTemplateId = templateId;
+        let latexToCompile = null;
+        let filesOverride = null;
 
-        // 1. If we have a savedId, fetch its metadata to get the templateId if missing
+        // 1. If we have a savedId, fetch its metadata and data
         if (savedId) {
           const savedMetadata = await resumeService.getSavedById(savedId);
           if (savedMetadata) {
@@ -43,9 +51,35 @@ export default function Compiler() {
           }
           
           const savedData = await resumeService.getSavedData(savedId);
-          if (savedData && savedData.latexContent) {
-            setCode(savedData.latexContent);
-            handleCompile(savedData.latexContent);
+          if (savedData) {
+            if (savedData.latexContent) {
+              setCode(savedData.latexContent);
+              latexToCompile = savedData.latexContent;
+            }
+            
+            if (savedData.photoBase64) {
+              filesOverride = { 'photo.png': savedData.photoBase64 };
+            }
+
+            if (savedData.files && Object.keys(savedData.files).length > 0) {
+              const loadedFiles = Object.entries(savedData.files).map(([name, url]) => ({
+                name,
+                url,
+                size: 0,
+                type: 'image/png' // fallback
+              }));
+              
+              setProjectFiles(prev => {
+                const merged = [...prev];
+                loadedFiles.forEach(lf => {
+                  if (!merged.find(m => m.name === lf.name)) merged.push(lf);
+                });
+                return merged;
+              });
+              
+              setShowFilePanel(true);
+              filesOverride = { ...filesOverride, ...savedData.files };
+            }
           }
         }
 
@@ -58,30 +92,48 @@ export default function Compiler() {
           if (!savedId) {
             if (tpl.latexContent) {
               setCode(tpl.latexContent);
-              handleCompile(tpl.latexContent);
+              latexToCompile = tpl.latexContent;
             } else {
               setCode('% No LaTeX content found for this template.\n% Start typing below...');
             }
           }
+        }
+
+        // 4. Compile ONCE at the end with the correct files
+        if (latexToCompile) {
+          await handleCompile(latexToCompile, filesOverride);
         }
       } catch (err) {
         console.error('Failed to load content:', err);
         setError('Failed to load content. Please try again.');
       } finally {
         setLoading(false);
+        // Small delay to let React flush state before enabling onChange
+        setTimeout(() => { isLoadingContent.current = false; }, 500);
       }
     };
 
     loadContent();
   }, [templateId, savedId]);
 
-  const handleCompile = async (latexCode) => {
+  // Build files map from projectFiles for compilation
+  const getFilesMap = useCallback(() => {
+    if (projectFiles.length === 0) return null;
+    const map = {};
+    projectFiles.forEach(f => { 
+      map[f.name] = f.url || f.base64; 
+    });
+    return map;
+  }, [projectFiles]);
+
+  const handleCompile = async (latexCode, filesOverride) => {
     if (!latexCode || !latexCode.trim()) return;
     
     setLoading(true);
     setError(null);
     try {
-      const blob = await compilerService.compile(latexCode);
+      const filesMap = filesOverride !== undefined ? filesOverride : getFilesMap();
+      const blob = await compilerService.compile(latexCode, filesMap);
       const url = URL.createObjectURL(blob);
       
       if (pdfUrl) URL.revokeObjectURL(pdfUrl);
@@ -96,12 +148,15 @@ export default function Compiler() {
 
   const debouncedCompile = useCallback(
     debounce((newCode) => handleCompile(newCode), 1500),
-    []
+    [projectFiles]
   );
 
   const handleEditorChange = (value) => {
     setCode(value);
-    debouncedCompile(value);
+    // Don't trigger recompile while initial content is loading
+    if (!isLoadingContent.current) {
+      debouncedCompile(value);
+    }
   };
 
   const downloadPdf = () => {
@@ -118,12 +173,19 @@ export default function Compiler() {
     setIsSaving(true);
     setSaveSuccess(false);
     try {
+      const filesMap = {};
+      projectFiles.forEach(f => {
+        filesMap[f.name] = f.url || f.base64;
+      });
+
       const payload = {
         templateId: templateId || template?.id,
         savedResumeId: savedId,
         resumeData: {
           latexContent: code,
-          fullName: resumeTitle || template?.name || 'My Resume'
+          fullName: resumeTitle || template?.name || 'My Resume',
+          photoBase64: filesMap['photo.png'] || '',
+          files: filesMap
         }
       };
       
@@ -153,6 +215,89 @@ export default function Compiler() {
     link.download = `${template?.name || 'resume'}.tex`;
     link.click();
     URL.revokeObjectURL(url);
+  };
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  // ── Overleaf-style file management ──────────────────────
+  const handleFileUpload = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    e.target.value = ''; // reset so same file can be re-selected
+
+    files.forEach(async (file) => {
+      // Check for duplicate names
+      if (projectFiles.some(pf => pf.name === file.name)) {
+        showToast(`"${file.name}" already exists. Delete it first to re-upload.`, 'error');
+        return;
+      }
+
+      try {
+        // 1. Show local preview immediately (industry standard)
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result;
+          setProjectFiles(prev => [...prev, {
+            name: file.name,
+            base64,
+            size: file.size,
+            type: file.type,
+            uploading: true
+          }]);
+        };
+        reader.readAsDataURL(file);
+
+        // 2. Upload to Cloudinary
+        const result = await resumeService.uploadFile(file);
+        
+        // 3. Update with Cloudinary URL
+        setProjectFiles(prev => prev.map(pf => 
+          pf.name === file.name 
+            ? { ...pf, url: result.url, uploading: false } 
+            : pf
+        ));
+        
+        showToast(`"${file.name}" uploaded to Cloudinary.`);
+      } catch (err) {
+        console.error('Upload failed:', err);
+        showToast(`Failed to upload "${file.name}".`, 'error');
+        removeFile(file.name);
+      }
+    });
+  };
+
+  const removeFile = (fileName) => {
+    setProjectFiles(prev => prev.filter(f => f.name !== fileName));
+    showToast(`"${fileName}" removed from project.`);
+  };
+
+  const insertFileName = (fileName) => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const position = editor.getPosition();
+    const snippet = fileName;
+    editor.executeEdits('insert-file', [{
+      range: {
+        startLineNumber: position.lineNumber,
+        startColumn: position.column,
+        endLineNumber: position.lineNumber,
+        endColumn: position.column,
+      },
+      text: snippet,
+    }]);
+    const newCode = editor.getValue();
+    setCode(newCode);
+    debouncedCompile(newCode);
+    showToast(`Inserted ${fileName} at cursor.`);
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   return (
@@ -209,7 +354,78 @@ export default function Compiler() {
         <section className="editor-pane">
           <div className="pane-top">
             <span><FileText size={14} /> {template?.name || 'document'}.tex</span>
+            <button 
+              className={`file-panel-toggle ${showFilePanel ? 'active' : ''} ${projectFiles.length > 0 ? 'has-files' : ''}`}
+              onClick={() => setShowFilePanel(!showFilePanel)}
+              title="Project Files"
+            >
+              <FolderOpen size={14} />
+              Files{projectFiles.length > 0 && <span className="file-count">{projectFiles.length}</span>}
+              {showFilePanel ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+            </button>
           </div>
+
+          {/* ── Overleaf-style File Panel ── */}
+          {showFilePanel && (
+            <div className="file-panel">
+              <div className="file-panel-header">
+                <span className="file-panel-title">Project Files</span>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/png,image/jpeg,image/jpg,image/gif,image/svg+xml,.eps,.pdf"
+                  multiple
+                  style={{ display: 'none' }}
+                  onChange={handleFileUpload}
+                />
+                <button 
+                  className="file-upload-btn" 
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload size={13} />
+                  Upload
+                </button>
+              </div>
+
+              {projectFiles.length === 0 ? (
+                <div className="file-panel-empty">
+                  <Image size={20} />
+                  <p>No files yet. Upload images to use in your LaTeX code.</p>
+                  <p className="file-panel-hint">Reference them with: <code>\includegraphics&#123;filename&#125;</code></p>
+                </div>
+              ) : (
+                <div className="file-list">
+                  {projectFiles.map(file => (
+                    <div key={file.name} className="file-item">
+                      <button 
+                        className="file-item-name" 
+                        onClick={() => insertFileName(file.name)}
+                        title={`Click to insert ${file.name} at cursor`}
+                      >
+                        <div className="file-item-thumb">
+                          {file.uploading ? (
+                            <Loader2 className="spin" size={10} />
+                          ) : (
+                            <img src={file.url || file.base64} alt="" />
+                          )}
+                        </div>
+                        <span>{file.name}</span>
+                        <span className="file-size">{formatFileSize(file.size)}</span>
+                      </button>
+                      <button 
+                        className="file-delete-btn" 
+                        onClick={() => removeFile(file.name)}
+                        title={`Remove ${file.name}`}
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="editor-container">
             <Editor
               height="100%"
@@ -257,6 +473,19 @@ export default function Compiler() {
           </div>
         </section>
       </main>
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`compiler-toast compiler-toast--${toast.type}`}>
+          <span className="toast-icon">
+            {toast.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+          </span>
+          <span className="toast-message">{toast.message}</span>
+          <button className="toast-close" onClick={() => setToast(null)}>
+            <X size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
